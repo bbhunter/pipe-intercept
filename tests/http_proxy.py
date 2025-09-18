@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from http_parser.pyparser import HttpParser
+# from http_parser.pyparser import HttpParser
 
 
 HTTP_PROXY_PORT = 9999
@@ -30,24 +30,53 @@ async def proxy_server_handler(server_reader, server_writer):
 
 
 def handle_connect_request(req: bytes):
-    parser = HttpParser()
-    parsed_len = parser.execute(req, len(req))
+    # Find end of headers
+    hdr_end = req.find(b"\r\n\r\n")
+    if hdr_end == -1:
+        raise ProxyException(f'Invalid request (no header terminator): {req!r}')
 
-    if parsed_len != len(req):
-        raise ProxyException(f'Invalid request: {req}')
+    # Decode headers using ISO-8859-1 per HTTP spec
+    try:
+        head = req[:hdr_end].decode("iso-8859-1")
+    except UnicodeDecodeError:
+        raise ProxyException('Invalid request encoding (expected ISO-8859-1)')
 
-    method = parser.get_method()
+    lines = head.split("\r\n")
+    if not lines or not lines[0]:
+        raise ProxyException(f'Invalid request line: {lines[:1]!r}')
+
+    # Parse request line: METHOD SP REQUEST-TARGET SP HTTP/VERSION
+    parts = lines[0].split()
+    if len(parts) != 3:
+        raise ProxyException(f'Invalid request line: {lines[0]!r}')
+    method, _target, version = parts
+
     if method != 'CONNECT':
         raise ProxyException(f'Invalid request method: {method}')
+    if not version.startswith("HTTP/"):
+        raise ProxyException(f'Invalid HTTP version: {version!r}')
 
-    host = parser.get_headers()['HOST'] 
-    host_split = host.split(':')
+    # Parse headers (very small, case-insensitive)
+    headers = {}
+    for raw in lines[1:]:
+        if not raw:
+            continue
+        if ":" not in raw:
+            raise ProxyException(f'Malformed header: {raw!r}')
+        k, v = raw.split(":", 1)
+        headers[k.strip().lower()] = v.lstrip()
 
+    # Match original behavior: read the authority from the Host header
+    if "host" not in headers:
+        raise ProxyException('Missing Host header')
+    host_hdr = headers["host"]
+
+    host_split = host_hdr.split(':')
     if len(host_split) != 2:
-        raise ProxyException(f'Invalid host: {host}')
+        raise ProxyException(f'Invalid host: {host_hdr}')
 
     host = host_split[0]
-    port = host_split[1]
+    port = host_split[1]  # keep as string to preserve original function signature
     return host, port
 
 

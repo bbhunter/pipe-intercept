@@ -21,6 +21,8 @@ As you can see from the items above, using this tool could change the behavior o
 ### Dependencies
 The tool was tested with Python versions 3.10.2 and 3.10.4. To install the dependencies:
 ```
+python -m venv .venv
+.venv\Scripts\activate.bat
 pip install -r requirements.txt
 ```
 ### Usage
