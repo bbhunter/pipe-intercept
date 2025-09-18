@@ -1,7 +1,6 @@
-websockets
+websockets>=10
 websocket-client
 pywin32
 asyncio
 pytest
 uuid
-http_parser

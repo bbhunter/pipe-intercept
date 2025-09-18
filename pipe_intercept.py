@@ -97,8 +97,8 @@ def pipe_client_to_ws_server(ws_server_conn, pipe, loop):
         pipe_helper.close_handle_ignore_error(pipe)
 
 
-async def ws_server_handler(ws_server_conn, path):
-    if path == f'/pipe/{config_handler.Config.pipe_name}':
+async def ws_server_handler(ws_server_conn):
+    if ws_server_conn.request.path == f'/pipe/{config_handler.Config.pipe_name}':
         pipe = pipe_helper.create_pipe_client(config_handler.Config.pipe_fullpath)
 
         ws_to_pipe_task = asyncio.create_task(ws_server_to_pipe_client(ws_server_conn, pipe))
