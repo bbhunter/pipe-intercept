@@ -1,6 +1,5 @@
 import asyncio
 import logging
-# from http_parser.pyparser import HttpParser
 
 
 HTTP_PROXY_PORT = 9999

@@ -19,7 +19,7 @@ It's important to understand that this tool works by creating separate pipe serv
 
 As you can see from the items above, using this tool could change the behavior of the target application. Please remember that this tool is primarily for security testing, do not use it in production systems.
 ### Dependencies
-The tool was tested with Python versions 3.10.2 and 3.10.4. To install the dependencies:
+The tool was tested with Python version 3.13.7. Setup:
 ```
 python -m venv .venv
 .venv\Scripts\activate.bat
